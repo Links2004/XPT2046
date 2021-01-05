@@ -1,4 +1,4 @@
-XPT2046 Touch driver for Arduino
+XPT2046 Touch driver for Arduino [![Build Status](https://github.com/Links2004/XPT2046/workflows/CI/badge.svg?branch=master)](https://github.com/Links2004/XPT2046/actions?query=workflow%3ACI+branch%3Amaster)
 ===========================================
 
 ### Issues ###

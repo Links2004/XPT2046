@@ -76,38 +76,6 @@ jobs:
           tar xf arduino-$IDE_VERSION-linux64.tar.xz
           mv arduino-$IDE_VERSION $HOME/arduino_ide
 
-      - name: download ArduinoJson
-        if: steps.cache_all.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          wget https://github.com/bblanchon/ArduinoJson/archive/6.x.zip -q
-          unzip 6.x.zip
-          mv ArduinoJson-6.x $HOME/Arduino/libraries/ArduinoJson
-
-      - name: download Adafruit-GFX-Library
-        if: steps.cache_all.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          git clone https://github.com/adafruit/Adafruit-GFX-Library
-          rm -rf */.git
-          rm -rf */.github
-
-      - name: download XPT2046
-        if: steps.cache_all.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          git clone https://github.com/Links2004/XPT2046
-          rm -rf */.git
-          rm -rf */.github
-
-      - name: download Adafruit_ILI9341
-        if: steps.cache_all.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p $HOME/Arduino/libraries
-          git clone https://github.com/Links2004/Adafruit_ILI9341
-          rm -rf */.git
-          rm -rf */.github
-
       - name: download esp8266
         if: steps.cache_all.outputs.cache-hit != 'true'
         run: |

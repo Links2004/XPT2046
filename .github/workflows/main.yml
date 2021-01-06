@@ -139,7 +139,7 @@ jobs:
 
       - name: copy code
         run: |
-          cp -r $GITHUB_WORKSPACE $HOME/Arduino/libraries/arduinoWebSockets
+          cp -r $GITHUB_WORKSPACE $HOME/Arduino/libraries/XPT2046
       
       - name: config IDE
         run: |

@@ -137,7 +137,7 @@ void XPT2046::read(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
 
     if(cY < _minY) {
         cY = 0;
-    } else if(cX > _minY) {
+    } else if(cY > _maxY) {
         cY = _height;
     } else {
         cY -= _minY;

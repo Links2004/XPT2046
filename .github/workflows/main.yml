@@ -17,7 +17,7 @@ jobs:
 
   prepare_example_json:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v2
 
       - name: generate examples
@@ -52,7 +52,7 @@ jobs:
     env:
       IDE_VERSION: ${{ matrix.IDE_VERSION }}
 
-    steps: 
+    steps:
       - uses: actions/checkout@v2
 
       - name: Get Date
@@ -105,6 +105,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: install libgtk2.0-0
+        run: |
+          sudo apt-get install -y libgtk2.0-0
+
       - name: Get Date
         id: get-date
         run: |
@@ -118,7 +122,7 @@ jobs:
             /home/runner/arduino_ide
             /home/runner/Arduino
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ matrix.ideversion }}
-      
+
       - name: install python serial
         if: matrix.cpu == 'esp32'
         run: |
@@ -141,7 +145,7 @@ jobs:
         run: |
           mkdir -p $HOME/Arduino/libraries/
           cp -r $GITHUB_WORKSPACE $HOME/Arduino/libraries/XPT2046
-      
+
       - name: config IDE
         run: |
           export DISPLAY=:1.0

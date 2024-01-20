@@ -23,7 +23,6 @@
  */
 
 #include "XPT2046.h"
-#include <debug.h>
 
 
 #define XPT2046_CFG_START   _BV(7)
@@ -44,8 +43,9 @@
 #define XPT2046_MUX_Z1      0b011
 #define XPT2046_MUX_Z2      0b100
 
-
-XPT2046::XPT2046(int8_t CS, int8_t IRQ) {
+XPT2046::XPT2046(int8_t CS, int8_t IRQ, SPIClass &wspi )
+{
+    _pspi = &wspi;
     _pinCs = CS;
     _pinIrq = IRQ;
     _spiSettings = SPISettings(2500000, MSBFIRST, SPI_MODE0);
@@ -125,7 +125,7 @@ void XPT2046::read(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
     uint32_t cX = x;
     uint32_t cY = y;
 
-
+    
     if(cX < _minX) {
         cX = 0;
     } else  if(cX > _maxX) {
@@ -147,7 +147,7 @@ void XPT2046::read(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
     *oX = cX;
     *oY = cY;
 
-  //  Serial1.printf("[Touch] raw X: %d Y: %d - real: X: %d Y: %d\n", x, y, cX, cY);
+    // Serial.printf("[Touch] raw X: %d Y: %d - real: X: %d Y: %d\n", x, y, cX, cY);
 }
 
 void XPT2046::onChange(uint16_t min, uint16_t pressure, XPT204Event cb) {
@@ -170,13 +170,13 @@ void XPT2046::readRaw(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
     for(; i < 15; i++) {
         // SPI requirer 32bit aliment
         uint8_t buf[12] = {
-                (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Y) | XPT2046_CFG_PWR(3)), 0x00, 0x00,
-                (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_X) | XPT2046_CFG_PWR(3)), 0x00, 0x00,
-                (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Z1)| XPT2046_CFG_PWR(3)), 0x00, 0x00,
-                (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Z2)| XPT2046_CFG_PWR(3)), 0x00, 0x00
+            (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Y) | XPT2046_CFG_PWR(3)), 0x00, 0x00,
+            (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_X) | XPT2046_CFG_PWR(3)), 0x00, 0x00,
+            (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Z1)| XPT2046_CFG_PWR(3)), 0x00, 0x00,
+            (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Z2)| XPT2046_CFG_PWR(3)), 0x00, 0x00
         };
 
-        SPI.transferBytes(&buf[0], &buf[0], 12);
+        _pspi->transferBytes(&buf[0], &buf[0], 12);
 
         y += (buf[1] << 8 | buf[2])>>3;
         x += (buf[4] << 8 | buf[5])>>3;
@@ -184,9 +184,7 @@ void XPT2046::readRaw(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
         z2 += (buf[10] << 8 | buf[11])>>3;
     }
 
-    enableIrq();
-
-    if(i == 0) {
+    if (i == 0) {
         *oX = 0;
         *oY = 0;
         *oZ = 0;
@@ -198,25 +196,20 @@ void XPT2046::readRaw(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
     z1 /= i;
     z2 /= i;
 
-    spiCsHigh();
-    spi_end();
-
-
-
-    switch(_rotation) {
-        case 0:
-        default:
-            break;
-        case 1:
-            x = (_maxValue - x);
-            y = (_maxValue - y);
-            break;
-        case 2:
-            y = (_maxValue - y);
-            break;
-        case 3:
-            x = (_maxValue - x);
-            break;
+    switch (_rotation) {
+    case 0:
+    default:
+        break;
+    case 1:
+        x = (_maxValue - x);
+        y = (_maxValue - y);
+        break;
+    case 2:
+        y = (_maxValue - y);
+        break;
+    case 3:
+        x = (_maxValue - x);
+        break;
     }
 
     int z = z1 + _maxValue - z2;
@@ -225,17 +218,17 @@ void XPT2046::readRaw(uint16_t * oX, uint16_t * oY, uint16_t * oZ) {
     *oY = y;
     *oZ = z;
 
-    //hexdump(buf, 8, 4);
-
-    //Serial1.printf("[Touch] X: %d Y: %d Z: %d (%d, %d)\n", x, y, z, z1, z2);
-
+    spiCsHigh();
+    spi_end();
+    enableIrq();
+    // Serial.printf("[TouchRaw] X: %d Y: %d Z: %d (%d, %d)\n", x, y, z, z1, z2);
 }
 
 void XPT2046::enableIrq() {
     spi_begin();
     spiCsLow();
-    const uint8_t buf[4] = { (XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Y)), 0x00, 0x00, 0x00 };
-    SPI.writeBytes((uint8_t *) &buf[0], 3);
+    const uint8_t buf[4] = {(XPT2046_CFG_START | XPT2046_CFG_12BIT | XPT2046_CFG_DFR | XPT2046_CFG_MUX(XPT2046_MUX_Y)), 0x00, 0x00, 0x00};
+    _pspi->writeBytes((uint8_t *)&buf[0], 3);
     spiCsHigh();
     spi_end();
 }
@@ -255,4 +248,3 @@ inline void XPT2046::spi_begin(void) {
 inline void XPT2046::spi_end(void) {
     SPI.endTransaction();
 }
-

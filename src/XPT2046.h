@@ -29,59 +29,56 @@
 #include <SPI.h>
 
 class XPT2046 {
-    public:
-        typedef void (*XPT204Event)(bool press, uint16_t x, uint16_t y, uint16_t z);
+public:
+    typedef void (*XPT204Event)(bool press, uint16_t x, uint16_t y, uint16_t z);
 
-        XPT2046(int8_t CS, int8_t IRQ);
-        ~XPT2046();
-        void begin(uint16_t width, uint16_t height);
-        void loop();
+    XPT2046(int8_t CS, int8_t IRQ, SPIClass &wspi=SPI);
+    ~XPT2046();
+    void begin(uint16_t width, uint16_t height);
+    void loop();
 
-        void setRotation(uint8_t m);
-        void setCalibration(uint16_t minX, uint16_t minY, uint16_t maxX, uint16_t maxY);
+    void setRotation(uint8_t m);
+    void setCalibration(uint16_t minX, uint16_t minY, uint16_t maxX, uint16_t maxY);
 
-        void read(uint16_t * oX, uint16_t * oY, uint16_t * oZ);
-        void readRaw(uint16_t * oX, uint16_t * oY, uint16_t * oZ);
+    void read(uint16_t *oX, uint16_t *oY, uint16_t *oZ);
+    void readRaw(uint16_t *oX, uint16_t *oY, uint16_t *oZ);
 
-        void onChange(uint16_t min, uint16_t pressure, XPT204Event cb);
-    protected:
-        int8_t _pinCs;
-        int8_t _pinIrq;
+    void onChange(uint16_t min, uint16_t pressure, XPT204Event cb);
 
-        uint16_t _width;
-        uint16_t _height;
+protected:
+    int8_t _pinCs;
+    int8_t _pinIrq;
 
-        uint16_t _rotation;
+    uint16_t _width;
+    uint16_t _height;
 
-        uint16_t _minX;
-        uint16_t _minY;
+    uint16_t _rotation;
 
-        uint16_t _maxX;
-        uint16_t _maxY;
+    uint16_t _minX;
+    uint16_t _minY;
 
-        uint16_t _maxValue;
+    uint16_t _maxX;
+    uint16_t _maxY;
 
-        SPISettings _spiSettings;
+    uint16_t _maxValue;
 
-        int _lastX;
-        int _lastY;
+    SPIClass *_pspi = nullptr;
+    SPISettings _spiSettings;
 
-        uint16_t _minChange;
-        uint16_t _pressure;
-        XPT204Event _cb;
+    int _lastX;
+    int _lastY;
 
-        void enableIrq();
+    uint16_t _minChange;
+    uint16_t _pressure;
+    XPT204Event _cb;
 
-        inline void spiCsHigh(void) __attribute__((always_inline));
-        inline void spiCsLow(void) __attribute__((always_inline));
+    void enableIrq();
 
-        inline void spi_begin(void) __attribute__((always_inline));
-        inline void spi_end(void) __attribute__((always_inline));
+    inline void spiCsHigh(void) __attribute__((always_inline));
+    inline void spiCsLow(void) __attribute__((always_inline));
 
+    inline void spi_begin(void) __attribute__((always_inline));
+    inline void spi_end(void) __attribute__((always_inline));
 };
-
-
-
-
 
 #endif /* XPT2046_H_ */

@@ -242,9 +242,9 @@ inline void XPT2046::spiCsLow(void) {
 }
 
 inline void XPT2046::spi_begin(void) {
-    SPI.beginTransaction(_spiSettings);
+    _pspi->beginTransaction(_spiSettings);
 }
 
 inline void XPT2046::spi_end(void) {
-    SPI.endTransaction();
+    _pspi->endTransaction();
 }
